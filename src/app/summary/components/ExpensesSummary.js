@@ -1,65 +1,76 @@
 "use client";
 
-import React, { useContext, useMemo } from "react";
-import Link from "next/link";
-import { ExpenseContext } from "../../context/ExpenseContext";
-import { Typography, Paper, Box, useTheme, Button } from "@mui/material";
+import React, { useEffect, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchExpenses } from "../../../redux/expenseSlice";
+import { Typography, Paper, Box, useTheme } from "@mui/material";
 import { Pie } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    ArcElement,
-    Tooltip,
-    Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function ExpensesSummary() {
-    const { expenses } = useContext(ExpenseContext);
+export default function ItemsSummary() {
+    const dispatch = useDispatch();
     const theme = useTheme();
 
+    // ✅ Access Redux slice correctly
+    const { items, loading, error } = useSelector((state) => state.expenses);
+
+    // ✅ Fetch expenses on mount
+    useEffect(() => {
+        dispatch(fetchExpenses());
+    }, [dispatch]);
+
+    // Utility function to parse date
     const toDate = (dateStr) => new Date(dateStr + "T00:00:00");
 
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
 
-    // Calculate total today as before
+    // ✅ Total for today
     const totalToday = useMemo(() => {
-        return expenses
-            .filter((exp) => exp.date === todayStr)
+        if (!items) return 0;
+        return items
+            .filter((exp) => exp.date.slice(0, 10) === todayStr)
             .reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-    }, [expenses, todayStr]);
+    }, [items, todayStr]);
 
-    // Calculate total for last 7 days including today
+    // ✅ Total last 7 days
     const totalLast7Days = useMemo(() => {
-        if (expenses.length === 0) return 0;
+        if (!items) return 0;
 
         const endOfToday = new Date();
         endOfToday.setHours(23, 59, 59, 999);
 
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(endOfToday.getDate() - 6); // 6 days before today
+        sevenDaysAgo.setDate(endOfToday.getDate() - 6);
         sevenDaysAgo.setHours(0, 0, 0, 0);
 
-        return expenses
+        return items
             .filter(({ date }) => {
                 const expenseDate = toDate(date);
                 return expenseDate >= sevenDaysAgo && expenseDate <= endOfToday;
             })
             .reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-    }, [expenses]);
+    }, [items]);
 
+    // ✅ Total this month
     const thisMonthStr = today.toISOString().slice(0, 7);
     const totalMonth = useMemo(() => {
-        return expenses
+        if (!items) return 0;
+        return items
             .filter((exp) => exp.date.startsWith(thisMonthStr))
             .reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-    }, [expenses, thisMonthStr]);
+    }, [items, thisMonthStr]);
 
+    // ✅ Pie chart data grouped by date
     const pieData = useMemo(() => {
+        if (!items) return { labels: [], datasets: [] };
+
         const group = {};
-        expenses.forEach(({ date, amount }) => {
-            group[date] = (group[date] || 0) + parseFloat(amount);
+        items.forEach(({ date, amount }) => {
+            const day = date.slice(0, 10); // normalize date
+            group[day] = (group[day] || 0) + parseFloat(amount);
         });
 
         const labels = Object.keys(group).sort();
@@ -84,123 +95,81 @@ export default function ExpensesSummary() {
                 },
             ],
         };
-    }, [expenses]);
+    }, [items]);
+
+    if (loading) return <Typography align="center">Loading...</Typography>;
+    if (error) return <Typography align="center" color="error">{error}</Typography>;
+    if (!items || items.length === 0)
+        return <Typography align="center">No expenses recorded yet.</Typography>;
 
     return (
-        <>
-            {/* Fixed Back Button at top-right of screen (optional to uncomment) */}
-            {/* <Box
-        sx={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 1300, // above most content
-        }}
-      >
-        <Button
-          variant="outlined"
-          component={Link}
-          href="/dashboard"
-          size="small"
-          sx={{
-            textTransform: "none",
-            color: theme.palette.primary.main,
-            borderColor: theme.palette.primary.main,
-            "&:hover": {
-              backgroundColor:
-                theme.palette.mode === "light"
-                  ? "rgba(25, 118, 210, 0.1)"
-                  : "rgba(25, 118, 210, 0.2)",
-              borderColor: theme.palette.primary.dark,
-            },
-          }}
-        >
-          Back
-        </Button>
-      </Box> */}
+        <Box sx={{ pt: 4, px: { xs: 1, sm: 2 } }}>
+            <Box sx={{ maxWidth: 600, mx: "auto" }}>
+                <Paper
+                    sx={{
+                        p: { xs: 3, sm: 5 },
+                        borderRadius: 3,
+                        bgcolor: theme.palette.mode === "light" ? "#fafafa" : "#202020",
+                        boxShadow:
+                            theme.palette.mode === "light"
+                                ? "0 4px 14px rgba(0,0,0,0.12)"
+                                : "0 4px 20px rgba(0,0,0,0.9)",
+                        userSelect: "none",
+                    }}
+                >
+                    <Typography
+                        variant="h5"
+                        gutterBottom
+                        align="center"
+                        color={theme.palette.primary.main}
+                        fontWeight={700}
+                        mb={{ xs: 3, sm: 4 }}
+                    >
+                        Expense Summary
+                    </Typography>
 
-            {/* Main content with top padding to avoid overlap */}
-            <Box sx={{ pt: 8, px: { xs: 1, sm: 2 } }}>
-                <Box sx={{ maxWidth: 600, mx: "auto" }}>
-                    <Paper
+                    <Box
                         sx={{
-                            p: { xs: 3, sm: 5 },
-                            borderRadius: 3,
-                            bgcolor: theme.palette.mode === "light" ? "#fafafa" : "#202020",
-                            boxShadow:
-                                theme.palette.mode === "light"
-                                    ? "0 4px 14px rgba(0,0,0,0.12)"
-                                    : "0 4px 20px rgba(0,0,0,0.9)",
-                            userSelect: "none",
+                            display: "flex",
+                            justifyContent: "space-around",
+                            flexWrap: "wrap",
+                            gap: { xs: 2, sm: 3 },
+                            mb: { xs: 3, sm: 4 },
                         }}
                     >
-                        <Typography
-                            variant="h5"
-                            gutterBottom
-                            align="center"
-                            color={theme.palette.primary.main}
-                            fontWeight={700}
-                            mb={{ xs: 3, sm: 4 }}
-                        >
-                            Expense Summary
-                        </Typography>
-
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "space-around",
-                                flexWrap: "wrap",
-                                gap: { xs: 2, sm: 3 },
-                                mb: { xs: 3, sm: 4 },
-                            }}
-                        >
-                            <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
-                                <Typography variant="subtitle1" fontWeight={600}>
-                                    Total Today
-                                </Typography>
-                                <Typography
-                                    variant="h6"
-                                    color="text.primary"
-                                    fontWeight={700}
-                                    sx={{ wordBreak: "break-word" }}
-                                >
-                                    ₹{totalToday.toFixed(2)}
-                                </Typography>
-                            </Box>
-                            <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
-                                <Typography variant="subtitle1" fontWeight={600}>
-                                    Total Last 7 Days
-                                </Typography>
-                                <Typography
-                                    variant="h6"
-                                    color="text.primary"
-                                    fontWeight={700}
-                                    sx={{ wordBreak: "break-word" }}
-                                >
-                                    ₹{totalLast7Days.toFixed(2)}
-                                </Typography>
-                            </Box>
-                            <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
-                                <Typography variant="subtitle1" fontWeight={600}>
-                                    Total This Month
-                                </Typography>
-                                <Typography
-                                    variant="h6"
-                                    color="text.primary"
-                                    fontWeight={700}
-                                    sx={{ wordBreak: "break-word" }}
-                                >
-                                    ₹{totalMonth.toFixed(2)}
-                                </Typography>
-                            </Box>
+                        <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
+                            <Typography variant="subtitle1" fontWeight={600}>
+                                Total Today
+                            </Typography>
+                            <Typography variant="h6" color="text.primary" fontWeight={700}>
+                                ₹{totalToday.toFixed(2)}
+                            </Typography>
                         </Box>
 
-                        <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
-                            <Pie data={pieData} />
+                        <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
+                            <Typography variant="subtitle1" fontWeight={600}>
+                                Total Last 7 Days
+                            </Typography>
+                            <Typography variant="h6" color="text.primary" fontWeight={700}>
+                                ₹{totalLast7Days.toFixed(2)}
+                            </Typography>
                         </Box>
-                    </Paper>
-                </Box>
+
+                        <Box textAlign="center" sx={{ minWidth: 100, flex: "1 1 120px" }}>
+                            <Typography variant="subtitle1" fontWeight={600}>
+                                Total This Month
+                            </Typography>
+                            <Typography variant="h6" color="text.primary" fontWeight={700}>
+                                ₹{totalMonth.toFixed(2)}
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
+                        <Pie data={pieData} />
+                    </Box>
+                </Paper>
             </Box>
-        </>
+        </Box>
     );
 }

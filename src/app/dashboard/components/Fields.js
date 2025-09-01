@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useContext, useEffect } from "react";
-import { ExpenseContext } from "../../context/ExpenseContext";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchExpenses, addExpense } from "../../../redux/expenseSlice";
 import {
     Box,
     TextField,
@@ -12,9 +13,10 @@ import {
 } from "@mui/material";
 
 export default function Fields() {
-    const { addExpense } = useContext(ExpenseContext);
-    const theme = useTheme();
+    const dispatch = useDispatch();
+    // const { items, loading, error } = useSelector((state) => state.expenses);
 
+    const theme = useTheme();
     const getTodayDateString = () => new Date().toISOString().slice(0, 10);
 
     const [formData, setFormData] = useState({
@@ -35,7 +37,7 @@ export default function Fields() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        addExpense(formData);
+        dispatch(addExpense(formData)); // ✅ pass the form data
         setFormData({ date: getTodayDateString(), amount: "", description: "" });
     };
 
