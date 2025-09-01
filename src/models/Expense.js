@@ -4,6 +4,6 @@ const ExpenseSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     description: { type: String, required: true },
     amount: { type: Number, required: true },
-}, { collection: "Expense" });
+}, { collection: "ExpenseData" });
 
-export default mongoose.models.Expense || mongoose.model("Expense", ExpenseSchema);
+export default mongoose.models.ExpenseData || mongoose.model("ExpenseData", ExpenseSchema);

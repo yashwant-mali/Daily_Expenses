@@ -6,9 +6,9 @@ export const connectDB = async () => {
     if (isConnected) return;
 
     try {
-        await mongoose.connect("mongodb://127.0.0.1:27017/ExpenseDb", {
+        // await mongoose.connect("mongodb://127.0.0.1:27017/ExpenseDb", {
             //add here the deployed db url
-            // await mongoose.connect(process.env.MONGODB_URI, {
+            await mongoose.connect(process.env.MONGODB_URI, {
 
             useNewUrlParser: true,
             useUnifiedTopology: true,
