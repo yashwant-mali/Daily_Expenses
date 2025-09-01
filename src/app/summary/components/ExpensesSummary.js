@@ -2,7 +2,7 @@
 
 import React, { useContext, useMemo } from "react";
 import Link from "next/link";
-import { ExpenseContext } from "../../dashboard/components/ExpenseContext";
+import { ExpenseContext } from "../../context/ExpenseContext";
 import { Typography, Paper, Box, useTheme, Button } from "@mui/material";
 import { Pie } from "react-chartjs-2";
 import {

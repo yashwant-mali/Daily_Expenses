@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useContext, useMemo, useState } from "react";
-import { ExpenseContext } from "./ExpenseContext";
+import { ExpenseContext } from "../../context/ExpenseContext";
 import {
     Paper,
     Typography,

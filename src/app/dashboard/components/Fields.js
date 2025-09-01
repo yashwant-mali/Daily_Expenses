@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useContext, useEffect } from "react";
-import { ExpenseContext } from "./ExpenseContext";
+import { ExpenseContext } from "../../context/ExpenseContext";
 import {
     Box,
     TextField,
