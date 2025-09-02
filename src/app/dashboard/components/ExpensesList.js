@@ -116,7 +116,7 @@ export default function ExpensesGroupedByDate() {
                 mb={3}
                 sx={{ textTransform: "capitalize", fontWeight: 600 }}
             >
-                {currentUser}&apos;s Expenses
+                {`${currentUser}'s Expenses`}
             </Typography>
 
             {sortedDates.map((date) => (
