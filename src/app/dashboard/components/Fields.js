@@ -1,8 +1,10 @@
+// src/app/dashboard/components/Fields.js
 "use client";
 
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchExpenses, addExpense } from "../../../redux/expenseSlice";
+import { addExpense } from "../../../redux/expenseSlice";
+import { useUser } from "../../context/UserContext.js"; // ✅ Import user context
 import {
     Box,
     TextField,
@@ -14,7 +16,8 @@ import {
 
 export default function Fields() {
     const dispatch = useDispatch();
-    // const { items, loading, error } = useSelector((state) => state.expenses);
+    const { currentUser } = useUser(); // ✅ Get current user
+    const { loading } = useSelector((state) => state.expenses);
 
     const theme = useTheme();
     const getTodayDateString = () => new Date().toISOString().slice(0, 10);
@@ -37,8 +40,24 @@ export default function Fields() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        dispatch(addExpense(formData)); // ✅ pass the form data
-        setFormData({ date: getTodayDateString(), amount: "", description: "" });
+
+        // ✅ Validate required fields
+        if (!formData.amount || !formData.date) {
+            alert("Please fill in both date and amount.");
+            return;
+        }
+
+        // ✅ Dispatch with user information
+        dispatch(addExpense({
+            expense: formData,
+            user: currentUser
+        }));
+
+        setFormData({
+            date: getTodayDateString(),
+            amount: "",
+            description: ""
+        });
     };
 
     return (
@@ -64,12 +83,24 @@ export default function Fields() {
                 variant="h5"
                 component="h1"
                 textAlign="center"
-                mb={4}
+                mb={2}
                 color={theme.palette.primary.main}
                 fontWeight={700}
             >
                 Add Expense
             </Typography>
+
+            {/* ✅ Show current user */}
+            <Typography
+                variant="subtitle1"
+                textAlign="center"
+                mb={3}
+                color={theme.palette.text.secondary}
+                sx={{ textTransform: "capitalize" }}
+            >
+                Adding for: <strong>{currentUser}</strong>
+            </Typography>
+
             <Box
                 component="form"
                 onSubmit={handleSubmit}
@@ -126,6 +157,7 @@ export default function Fields() {
                     variant="contained"
                     type="submit"
                     size="large"
+                    disabled={loading} // ✅ Disable during loading
                     sx={{
                         py: 1.75,
                         fontSize: "1.15rem",
@@ -140,7 +172,7 @@ export default function Fields() {
                     disableElevation
                     aria-label="Submit expense form"
                 >
-                    Submit
+                    {loading ? "Adding..." : "Submit"}
                 </Button>
             </Box>
         </Paper>

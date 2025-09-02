@@ -1,3 +1,4 @@
+// src/app/dashboard/components/ExpensesList.js
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -16,19 +17,21 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchExpenses, updateExpense, deleteExpense } from "../../../redux/expenseSlice";
+import { useUser } from "../../context/UserContext.js"; // ✅ Import user context
 
 export default function ExpensesGroupedByDate() {
     const dispatch = useDispatch();
     const theme = useTheme();
+    const { currentUser } = useUser(); // ✅ Get current user
     const { items, loading, error } = useSelector((state) => state.expenses);
 
     const [changeDate, setChangeDate] = useState(null);
     const [editData, setEditData] = useState({});
 
-    // Fetch expenses on mount
+    // ✅ Fetch expenses when component mounts or user changes
     useEffect(() => {
-        dispatch(fetchExpenses());
-    }, [dispatch]);
+        dispatch(fetchExpenses(currentUser));
+    }, [dispatch, currentUser]);
 
     // Group expenses by date and calculate daily totals
     const expensesByDate = useMemo(() => {
@@ -95,13 +98,27 @@ export default function ExpensesGroupedByDate() {
         }
     };
 
-    if (loading) return <Typography align="center">Loading...</Typography>;
+    if (loading) return <Typography align="center">Loading {currentUser}'s expenses...</Typography>;
     if (error) return <Typography color="error" align="center">{error}</Typography>;
     if (!items || items.length === 0)
-        return <Typography align="center">No expenses recorded yet.</Typography>;
+        return (
+            <Typography align="center" sx={{ mt: 4 }}>
+                No expenses recorded for <strong style={{ textTransform: "capitalize" }}>{currentUser}</strong> yet.
+            </Typography>
+        );
 
     return (
         <Box sx={{ maxWidth: 600, mx: "auto", my: 4, px: { xs: 2, sm: 3 } }}>
+            {/* ✅ Show user-specific header */}
+            <Typography
+                variant="h6"
+                textAlign="center"
+                mb={3}
+                sx={{ textTransform: "capitalize", fontWeight: 600 }}
+            >
+                {currentUser}'s Expenses
+            </Typography>
+
             {sortedDates.map((date) => (
                 <Paper
                     key={date}

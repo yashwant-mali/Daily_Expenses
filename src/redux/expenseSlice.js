@@ -1,41 +1,38 @@
-
-
-
+// src/redux/expenseSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// API base URL
-// const API_URL = "http://localhost:3000/api/expenses";
-
-//this url is working with both vercel and localhost
 const API_URL = "/api/expenses";
 
-
-// 🔹 Thunks
+// 🔹 Fetch expenses for specific user
 export const fetchExpenses = createAsyncThunk(
     "expenses/fetchExpenses",
-    async () => {
-        const res = await axios.get(API_URL);
+    async (user) => {
+        const res = await axios.get(`${API_URL}?user=${user}`);
         return res.data;
     }
 );
 
+// 🔹 Add expense with user
 export const addExpense = createAsyncThunk(
     "expenses/addExpense",
-    async (expense) => {
-        const res = await axios.post(API_URL, expense);
+    async ({ expense, user }) => {
+        const expenseWithUser = { ...expense, user };
+        const res = await axios.post(API_URL, expenseWithUser);
         return res.data;
     }
 );
 
+// 🔹 Delete expense (no user needed since we delete by ID)
 export const deleteExpense = createAsyncThunk(
     "expenses/deleteExpense",
     async (id) => {
         await axios.delete(`${API_URL}/${id}`);
-        return id; // return deleted id
+        return id;
     }
 );
 
+// 🔹 Update expense (no user needed since we update by ID)
 export const updateExpense = createAsyncThunk(
     "expenses/updateExpense",
     async ({ id, updatedData }) => {
@@ -48,28 +45,48 @@ export const updateExpense = createAsyncThunk(
 const expenseSlice = createSlice({
     name: "expenses",
     initialState: {
-        items: [],   // ✅ keep everything inside items
+        items: [],
         loading: false,
         error: null,
+        currentUser: 'nobita', // ✅ Track current user in Redux too
     },
-    reducers: {},
+    reducers: {
+        // ✅ Action to set current user
+        setCurrentUser: (state, action) => {
+            state.currentUser = action.payload;
+            state.items = []; // Clear items when switching users
+        },
+        // ✅ Clear expenses (useful when switching users)
+        clearExpenses: (state) => {
+            state.items = [];
+        },
+    },
     extraReducers: (builder) => {
         builder
             // Fetch
             .addCase(fetchExpenses.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(fetchExpenses.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload; // ✅ fixed here
+                state.items = action.payload;
             })
             .addCase(fetchExpenses.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
             // Add
+            .addCase(addExpense.pending, (state) => {
+                state.loading = true;
+            })
             .addCase(addExpense.fulfilled, (state, action) => {
+                state.loading = false;
                 state.items.push(action.payload);
+            })
+            .addCase(addExpense.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             })
             // Delete
             .addCase(deleteExpense.fulfilled, (state, action) => {
@@ -85,4 +102,5 @@ const expenseSlice = createSlice({
     },
 });
 
+export const { setCurrentUser, clearExpenses } = expenseSlice.actions;
 export default expenseSlice.reducer;

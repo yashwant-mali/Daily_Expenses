@@ -1,8 +1,10 @@
+// src/app/summary/components/ExpensesSummary.js
 "use client";
 
 import React, { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchExpenses } from "../../../redux/expenseSlice";
+import { useUser } from "../../context/UserContext.js"; // ✅ Import user context
 import { Typography, Paper, Box, useTheme } from "@mui/material";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -12,14 +14,15 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 export default function ItemsSummary() {
     const dispatch = useDispatch();
     const theme = useTheme();
+    const { currentUser } = useUser(); // ✅ Get current user
 
     // ✅ Access Redux slice correctly
     const { items, loading, error } = useSelector((state) => state.expenses);
 
-    // ✅ Fetch expenses on mount
+    // ✅ Fetch expenses for current user on mount or user change
     useEffect(() => {
-        dispatch(fetchExpenses());
-    }, [dispatch]);
+        dispatch(fetchExpenses(currentUser));
+    }, [dispatch, currentUser]);
 
     // Utility function to parse date
     const toDate = (dateStr) => new Date(dateStr + "T00:00:00");
@@ -65,7 +68,7 @@ export default function ItemsSummary() {
 
     // ✅ Pie chart data grouped by date
     const pieData = useMemo(() => {
-        if (!items) return { labels: [], datasets: [] };
+        if (!items || items.length === 0) return { labels: [], datasets: [] };
 
         const group = {};
         items.forEach(({ date, amount }) => {
@@ -80,7 +83,7 @@ export default function ItemsSummary() {
             labels,
             datasets: [
                 {
-                    label: "Expenses by Date",
+                    label: `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}'s Expenses by Date`,
                     data,
                     backgroundColor: [
                         "#1976d2",
@@ -90,17 +93,25 @@ export default function ItemsSummary() {
                         "#ab47bc",
                         "#29b6f6",
                         "#ff7043",
+                        "#8e24aa",
+                        "#00acc1",
+                        "#fb8c00",
                     ],
-                    borderWidth: 1,
+                    borderWidth: 2,
+                    borderColor: theme.palette.mode === "light" ? "#fff" : "#333",
                 },
             ],
         };
-    }, [items]);
+    }, [items, currentUser, theme]);
 
-    if (loading) return <Typography align="center">Loading...</Typography>;
+    if (loading) return <Typography align="center">Loading {currentUser}'s summary...</Typography>;
     if (error) return <Typography align="center" color="error">{error}</Typography>;
     if (!items || items.length === 0)
-        return <Typography align="center">No expenses recorded yet.</Typography>;
+        return (
+            <Typography align="center" sx={{ mt: 4 }}>
+                No expenses recorded for <strong style={{ textTransform: "capitalize" }}>{currentUser}</strong> yet.
+            </Typography>
+        );
 
     return (
         <Box sx={{ pt: 4, px: { xs: 1, sm: 2 } }}>
@@ -123,9 +134,20 @@ export default function ItemsSummary() {
                         align="center"
                         color={theme.palette.primary.main}
                         fontWeight={700}
-                        mb={{ xs: 3, sm: 4 }}
+                        mb={2}
                     >
                         Expense Summary
+                    </Typography>
+
+                    {/* ✅ Show current user */}
+                    <Typography
+                        variant="subtitle1"
+                        textAlign="center"
+                        mb={4}
+                        color={theme.palette.text.secondary}
+                        sx={{ textTransform: "capitalize" }}
+                    >
+                        Showing data for: <strong>{currentUser}</strong>
                     </Typography>
 
                     <Box
@@ -165,9 +187,35 @@ export default function ItemsSummary() {
                         </Box>
                     </Box>
 
-                    <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
-                        <Pie data={pieData} />
-                    </Box>
+                    {/* ✅ Show pie chart only if data exists */}
+                    {pieData.labels.length > 0 && (
+                        <Box sx={{ maxWidth: "100%", overflowX: "auto" }}>
+                            <Pie
+                                data={pieData}
+                                options={{
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom',
+                                            labels: {
+                                                color: theme.palette.text.primary,
+                                                font: {
+                                                    size: 12
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function (context) {
+                                                    return `${context.label}: ₹${context.formattedValue}`;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
+                        </Box>
+                    )}
                 </Paper>
             </Box>
         </Box>
