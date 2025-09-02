@@ -5,7 +5,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // API base URL
-const API_URL = "http://localhost:3000/api/expenses";
+// const API_URL = "http://localhost:3000/api/expenses";
+
+//this url is working with both vercel and localhost
+const API_URL = "/api/expenses";
+
 
 // 🔹 Thunks
 export const fetchExpenses = createAsyncThunk(

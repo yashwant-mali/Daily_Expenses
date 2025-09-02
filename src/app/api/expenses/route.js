@@ -4,25 +4,11 @@ import Expense from "@/models/Expense";
 // GET all expenses
 export async function GET() {
     try {
-        console.log('API called - checking environment');
-        console.log('MongoDB URI exists:', !!process.env.MONGODB_URI);
-        console.log('URI starts with mongodb:', process.env.MONGODB_URI?.startsWith('mongodb'));
-
-        console.log('Attempting to connect to database...');
         await connectDB();
-        console.log('Database connected successfully');
-
-        console.log('Fetching expenses...');
         const expenses = await Expense.find({});
-        console.log('Expenses found:', expenses.length);
-
         return new Response(JSON.stringify(expenses), { status: 200 });
     } catch (error) {
-        console.error('API Error:', error);
-        return new Response(JSON.stringify({
-            error: error.message,
-            stack: error.stack
-        }), { status: 500 });
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }
 
