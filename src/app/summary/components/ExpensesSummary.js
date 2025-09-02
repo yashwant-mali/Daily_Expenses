@@ -83,7 +83,7 @@ export default function ItemsSummary() {
             labels,
             datasets: [
                 {
-                    label: `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}&apos;s Expenses by Date`, //fixed
+                    label: `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}'s Expenses by Date`,
                     data,
                     backgroundColor: [
                         "#1976d2",
