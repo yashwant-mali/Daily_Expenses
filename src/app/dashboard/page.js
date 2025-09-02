@@ -98,7 +98,7 @@ export default function DashboardPage() {
                         },
                     }}
                 >
-                    👦 Nobita's Expenses
+                    👦 Nobita&apos;s Expenses   {/* ✅ FIXED */}
                 </MenuItem>
                 <MenuItem
                     onClick={() => handleUserSwitch('doremon')}
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                         },
                     }}
                 >
-                    🤖 Doremon's Expenses
+                    🤖 Doremon&apos;s Expenses   {/* ✅ FIXED */}
                 </MenuItem>
 
                 {/* ✅ Summary Link */}
