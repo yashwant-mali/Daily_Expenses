@@ -83,7 +83,7 @@ export default function ItemsSummary() {
             labels,
             datasets: [
                 {
-                    label: `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}` + "s Expenses by Date", data,
+                    label: `${currentUser.charAt(0).toUpperCase() + currentUser.slice(1)}'s Expenses by Date`, data,
                     backgroundColor: [
                         "#1976d2",
                         "#dc004e",
@@ -103,7 +103,7 @@ export default function ItemsSummary() {
         };
     }, [items, currentUser, theme]);
 
-    if (loading) return <Typography align="center">Loading {currentUser}s summary...</Typography>;
+    if (loading) return <Typography align="center">Loading {currentUser} summary...</Typography>;
     if (error) return <Typography align="center" color="error">{error}</Typography>;
     if (!items || items.length === 0)
         return (
