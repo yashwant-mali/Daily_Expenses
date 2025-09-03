@@ -98,7 +98,7 @@ export default function ExpensesGroupedByDate() {
         }
     };
 
-    if (loading) return <Typography align="center">Loading {currentUser}'s expenses...</Typography>;
+    if (loading) return <Typography align="center">Loading {currentUser}s expenses...</Typography>;
     if (error) return <Typography color="error" align="center">{error}</Typography>;
     if (!items || items.length === 0)
         return (
@@ -109,14 +109,14 @@ export default function ExpensesGroupedByDate() {
 
     return (
         <Box sx={{ maxWidth: 600, mx: "auto", my: 4, px: { xs: 2, sm: 3 } }}>
-            {/* ✅ Show user-specific header */}
+            {/*  Show user-specific header */}
             <Typography
                 variant="h6"
                 textAlign="center"
                 mb={3}
                 sx={{ textTransform: "capitalize", fontWeight: 600 }}
             >
-                {`${currentUser}'s Expenses`}
+                {`${currentUser}s Expenses`}
             </Typography>
 
             {sortedDates.map((date) => (

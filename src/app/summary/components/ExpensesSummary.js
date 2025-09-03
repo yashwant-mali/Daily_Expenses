@@ -103,7 +103,7 @@ export default function ItemsSummary() {
         };
     }, [items, currentUser, theme]);
 
-    if (loading) return <Typography align="center">Loading {currentUser}'s summary...</Typography>;
+    if (loading) return <Typography align="center">Loading {currentUser}s summary...</Typography>;
     if (error) return <Typography align="center" color="error">{error}</Typography>;
     if (!items || items.length === 0)
         return (
@@ -195,7 +195,7 @@ export default function ItemsSummary() {
                                     responsive: true,
                                     plugins: {
                                         legend: {
-                                            position: 'bottom',
+                                            position: "bottom",
                                             labels: {
                                                 color: theme.palette.text.primary,
                                                 font: {
