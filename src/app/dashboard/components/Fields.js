@@ -67,9 +67,9 @@ export default function Fields() {
                 width: "90vw",
                 maxWidth: 600,
                 mx: "auto",
-                my: 4,
+                my: 1,
                 px: { xs: 3, sm: 5 },
-                py: { xs: 4, sm: 5 },
+                py: { xs: 2, sm: 2 },
                 borderRadius: 3,
                 backgroundColor: theme.palette.mode === "light" ? "#fafafa" : "#202020",
                 boxShadow:
@@ -83,7 +83,7 @@ export default function Fields() {
                 variant="h5"
                 component="h1"
                 textAlign="center"
-                mb={2}
+                mb={1}
                 color={theme.palette.primary.main}
                 fontWeight={700}
             >
@@ -94,7 +94,7 @@ export default function Fields() {
             <Typography
                 variant="subtitle1"
                 textAlign="center"
-                mb={3}
+                mb={2}
                 color={theme.palette.text.secondary}
                 sx={{ textTransform: "capitalize" }}
             >
@@ -150,7 +150,7 @@ export default function Fields() {
                     maxRows={4}
                     sx={{
                         fontSize: { xs: "1.1rem", sm: "1.2rem" },
-                        "& .MuiInputBase-input": { padding: "14px 16px" },
+                        "& .MuiInputBase-input": { padding: "1px 16px" },
                     }}
                 />
                 <Button
