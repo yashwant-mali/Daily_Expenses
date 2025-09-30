@@ -126,6 +126,19 @@ export default function DashboardPage() {
                 >
                     Summary
                 </MenuItem>
+                {/* monthly */}
+                <MenuItem
+                    onClick={handleClose}
+                    component={Link}
+                    href="/monthly"
+                    sx={{
+                        "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.08)",
+                        },
+                    }}
+                >
+                    Monthly
+                </MenuItem>
             </Menu>
 
             <Fields />
