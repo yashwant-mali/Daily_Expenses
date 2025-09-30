@@ -1,4 +1,3 @@
-// src/app/dashboard/components/ExpensesList.js
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -17,33 +16,46 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchExpenses, updateExpense, deleteExpense } from "../../../redux/expenseSlice";
-import { useUser } from "../../context/UserContext.js"; // ✅ Import user context
+import { useUser } from "../../context/UserContext.js";
 
 export default function ExpensesGroupedByDate() {
     const dispatch = useDispatch();
     const theme = useTheme();
-    const { currentUser } = useUser(); // ✅ Get current user
+    const { currentUser } = useUser();
     const { items, loading, error } = useSelector((state) => state.expenses);
 
     const [changeDate, setChangeDate] = useState(null);
     const [editData, setEditData] = useState({});
 
-    // ✅ Fetch expenses when component mounts or user changes
     useEffect(() => {
         dispatch(fetchExpenses(currentUser));
     }, [dispatch, currentUser]);
 
-    // Group expenses by date and calculate daily totals
+    // Get current month and year
+    const now = new Date();
+    const currentMonth = now.getMonth(); // zero-based month
+    const currentYear = now.getFullYear();
+
+    // Filter items to only current month/year
+    const currentMonthItems = useMemo(() => {
+        if (!items) return [];
+        return items.filter((exp) => {
+            const date = new Date(exp.date);
+            return date.getFullYear() === currentYear && date.getMonth() === currentMonth;
+        });
+    }, [items, currentYear, currentMonth]);
+
+    // Group expenses by date and calculate daily totals (only current month data)
     const expensesByDate = useMemo(() => {
-        if (!items) return {};
-        return items.reduce((groups, exp) => {
-            const dateKey = exp.date.split("T")[0]; // normalize date string
+        if (!currentMonthItems) return {};
+        return currentMonthItems.reduce((groups, exp) => {
+            const dateKey = exp.date.split("T")[0];
             if (!groups[dateKey]) groups[dateKey] = { items: [], total: 0 };
             groups[dateKey].items.push(exp);
             groups[dateKey].total += parseFloat(exp.amount);
             return groups;
         }, {});
-    }, [items]);
+    }, [currentMonthItems]);
 
     // Sort dates descending
     const sortedDates = Object.keys(expensesByDate).sort(
@@ -100,23 +112,23 @@ export default function ExpensesGroupedByDate() {
 
     if (loading) return <Typography align="center">Loading {currentUser} expenses...</Typography>;
     if (error) return <Typography color="error" align="center">{error}</Typography>;
-    if (!items || items.length === 0)
+    if (!currentMonthItems || currentMonthItems.length === 0)
         return (
             <Typography align="center" sx={{ mt: 4 }}>
-                No expenses recorded for <strong style={{ textTransform: "capitalize" }}>{currentUser}</strong> yet.
+                No expenses recorded for <strong style={{ textTransform: "capitalize" }}>{currentUser}</strong> in the current month yet.
             </Typography>
         );
 
     return (
         <Box sx={{ maxWidth: 600, mx: "auto", my: 4, px: { xs: 2, sm: 3 } }}>
-            {/*  Show user-specific header */}
+            {/* Show user-specific header */}
             <Typography
                 variant="h6"
                 textAlign="center"
                 mb={3}
                 sx={{ textTransform: "capitalize", fontWeight: 600 }}
             >
-                {`${currentUser} Expenses`}
+                {`${currentUser} Expenses of ${now.toLocaleString('default', { month: 'long' })} ${currentYear}`}
             </Typography>
 
             {sortedDates.map((date) => (
