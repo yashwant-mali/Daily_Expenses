@@ -21,14 +21,14 @@ export default function MonthTub() {
   const { items, loading, error } = useExpensesItems();
   const [selectedYearMonth, setSelectedYearMonth] = useState(null);
 
-  // Group by year and month with total calculation
+  // Grouping data unchanged...
   const groupedData = useMemo(() => {
     if (!items) return {};
     const map = {};
     items.forEach(({ date, amount, description, _id }) => {
       const d = new Date(date);
       const year = d.getFullYear();
-      const month = d.getMonth(); // zero-based month
+      const month = d.getMonth();
 
       if (!map[year]) map[year] = {};
       if (!map[year][month]) {
@@ -38,7 +38,6 @@ export default function MonthTub() {
       map[year][month].items.push({ date, amount, description, _id });
     });
 
-    // Sort months within each year
     Object.keys(map).forEach((year) => {
       const months = map[year];
       map[year] = Object.keys(months)
@@ -52,12 +51,11 @@ export default function MonthTub() {
     return map;
   }, [items]);
 
-  // Filter items and total for selected year and month
   const filteredItems = useMemo(() => {
     if (!selectedYearMonth) return [];
     const [yearStr, monthStr] = selectedYearMonth.split("-");
     const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10) - 1; // zero-based
+    const month = parseInt(monthStr, 10) - 1;
     return groupedData[year]?.[month]?.items || [];
   }, [groupedData, selectedYearMonth]);
 
@@ -69,7 +67,6 @@ export default function MonthTub() {
     return groupedData[year]?.[month]?.total || 0;
   }, [groupedData, selectedYearMonth]);
 
-  // Group filtered items by date string for table grouping
   const groupedByDate = useMemo(() => {
     return filteredItems.reduce((groups, item) => {
       const dateKey = new Date(item.date).toLocaleDateString();
@@ -85,13 +82,16 @@ export default function MonthTub() {
     return <Typography>No expenses found.</Typography>;
 
   return (
-    <Box sx={{ maxWidth: 700, mx: "auto", my: 4 }}>
+    <Box sx={{ maxWidth: 700, mx: "auto", my: 4, px: { xs: 1, sm: 2, md: 3 } }}>
       {/* Year and month cards */}
       {Object.keys(groupedData)
         .sort((a, b) => b - a)
         .map((year) => (
           <Box key={year} sx={{ mb: 4 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            <Typography
+              variant="h5"
+              sx={{ mb: 2, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+            >
               {year}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -104,7 +104,7 @@ export default function MonthTub() {
                     key={ymKey}
                     variant={selectedYearMonth === ymKey ? "contained" : "outlined"}
                     onClick={() => setSelectedYearMonth(ymKey)}
-                    sx={{ minWidth: 80 }}
+                    sx={{ minWidth: 70, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
                     {monthNames[parseInt(month, 10)]}
                   </Button>
@@ -116,8 +116,11 @@ export default function MonthTub() {
 
       {/* Table for selected month data with grouped dates */}
       {selectedYearMonth && (
-        <Paper sx={{ p: 2, mt: 4 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
+        <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, mt: 4, overflowX: "auto" }}>
+          <Typography
+            variant="h6"
+            sx={{ mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
+          >
             Expenses in{" "}
             {monthNames[parseInt(selectedYearMonth.split("-")[1], 10) - 1]}{" "}
             {selectedYearMonth.split("-")[0]} - Total: ₹{selectedMonthTotal.toFixed(2)}
@@ -125,12 +128,12 @@ export default function MonthTub() {
           {filteredItems.length === 0 ? (
             <Typography>No expenses for this month.</Typography>
           ) : (
-            <Table>
+            <Table sx={{ minWidth: 350 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell align="right">Amount (₹)</TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Date</TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Description</TableCell>
+                  <TableCell sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }} align="right">Amount (₹)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -141,15 +144,44 @@ export default function MonthTub() {
                         bgcolor: index % 2 === 0 ? "action.hover" : "background.default",
                       }}
                     >
-                      <TableCell colSpan={3} sx={{ fontWeight: "bold" }}>
+                      <TableCell
+                        colSpan={1}
+                        sx={{
+                          fontWeight: "bold",
+                          whiteSpace: "nowrap",
+                          verticalAlign: "middle",
+                          px: { xs: 1, sm: 2 },
+                          minWidth: 100,
+                          fontSize: { xs: '0.75rem', sm: '0.9rem' },
+                        }}
+                      >
                         {date}
                       </TableCell>
+
+                      <TableCell sx={{ width: "100%" }} />
+
+                      <TableCell
+                        sx={{
+                          fontWeight: "bold",
+                          whiteSpace: "nowrap",
+                          textAlign: "right",
+                          verticalAlign: "middle",
+                          px: { xs: 1, sm: 2 },
+                          minWidth: 120,
+                          fontSize: { xs: '0.75rem', sm: '0.9rem' },
+                        }}
+                      >
+                        Total Amount : ₹{items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2)}
+                      </TableCell>
                     </TableRow>
+
                     {items.map(({ _id, description, amount }) => (
                       <TableRow key={_id}>
-                        <TableCell />
-                        <TableCell>{description || "-"}</TableCell>
-                        <TableCell align="right">{amount}</TableCell>
+                        <TableCell sx={{ px: { xs: 1, sm: 2 } }} />
+                        <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' } }}>{description || "-"}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' } }} align="right">
+                          {amount}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </React.Fragment>
